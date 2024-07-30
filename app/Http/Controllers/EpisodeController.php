@@ -9,10 +9,17 @@ class EpisodeController extends Controller
 {
     public function index(Request $request)
     {
-        $searchtext = $request->input('searchtext');
-        $date = $request->input('date');
-        $orderBy = $request->input('orderBy', 'air_date');
-        $orderDirection = $request->input('orderDirection', 'asc');
+        $validatedData = $request->validate([
+            'searchtext' => ['nullable', 'string'],
+            'date' => ['nullable', 'string'],
+            'orderBy' => ['sometimes', 'in:name,air_date'],
+            'orderDirection' => ['sometimes', 'in:asc,desc'],
+        ]);
+
+        $searchtext = $validatedData['searchtext'] ?? null;
+        $date = $validatedData['date'] ?? null;
+        $orderBy = $validatedData['orderBy'] ?? 'air_date';
+        $orderDirection = $validatedData['orderDirection'] ?? 'asc';
 
         $episodes = Episode::query()
             ->when($searchtext, function ($query, $searchtext) {
@@ -21,13 +28,9 @@ class EpisodeController extends Controller
                           ->orWhere('air_date', 'LIKE', "%{$searchtext}%");
                 });
             })
-            ->when($date, function ($query, $date) {
-                $query->where('air_date', 'LIKE', "%{$date}%");
-            })
             ->orderBy($orderBy, $orderDirection)
             ->simplePaginate(5);
 
         return view('episodes.index', compact('episodes'));
     }
 }
-

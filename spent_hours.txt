@@ -1,0 +1,3 @@
+Backend implementálása 1 óra 
+Frontend implementálása 1 óra
+laravel documentáció olvasás 3 óra
